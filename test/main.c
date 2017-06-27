@@ -37,7 +37,7 @@ void load()
     FILE *fp;
     int i;
     fp = fopen("//Users//y20161104577//Desktop//test//GPS.log","r");
-    fscanf(fp,"%s %s",&str1,&str2);
+    fscanf(fp,"%s %s",str1,str2);
     for(i=0; i<9; i++) {
         if(i<8)
             lat[i] = str2[i+14];
@@ -48,15 +48,15 @@ void load()
         }
     }
     for(i=0; i<8; i++) {
-        if(lat[i]='.') {
+        if(lat[i]=='.') {
             newlat[i] = 0;
         }
         else {
             newlat[i] = lat[i] - 48;
         }
     }
-    for(i=0; i<8; i++) {
-        if(lon[i]='.') {
+    for(i=0; i<9; i++) {
+        if(lon[i]=='.') {
             newlon[i] = 0;
         }
         else {
@@ -64,8 +64,14 @@ void load()
         }
     }
     lat1 = newlat[0]*10 + newlat[1];
+    lat2 = newlat[2]*10000 + newlat[3]*1000 + newlat[5]*100 + newlat[6]*10 + newlat[7];
+    lat2 /= 1000;
+    printf("纬度为：%d'%.3f\n",lat1,lat2);
+    lon1 = newlon[0]*100 + newlon[1]*10 + newlon[2];
+    lon2 = newlon[3]*10000 + newlon[4]*1000 + newlon[6]*100 + newlon[7]*10 + newlon[8];
+    lon2 /= 1000;
+    printf("经度为：%d'%.3lf\n",lon1,lon2);
     
-    printf("lat = %s\nlon = %s\n",lat,lon);
 /*********************************************************************************************/
     //对UTC时间提取，分析                                                                         时间
     hour = time[0]*10 + time[1];
