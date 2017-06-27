@@ -9,11 +9,13 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-
+void load();
+int main() {
+    load();
+    return 0;
+}
 void load()
 {
-    char str1[100];//$GPRMC第一行
-    char str2[100];//$GPGGA第二行
     int time[10];//UTC时间；
     int date[10];//UTC年月日
     int year;//
@@ -33,83 +35,98 @@ void load()
     int lon1;//经度的度
     double lon2;//经度的分
     char longitude;//经度方向；
-    int  elevation = 0;//海拔高度；
-    FILE *fp;
+    int  elevation;//海拔高度；
     int i;
+    FILE *fp;
+    char str1[100];//$GPRMC第一行
+    char str2[100];//$GPGGA第二行
+    //将数据写入excel
+    FILE *fl;
+    fl = fopen("//Users//y20161104577//Desktop//test//information.csv","w");
+    fprintf(fl,"日期，时间，纬度方向，纬度，经度方向，经度，海拔高度\n");
     fp = fopen("//Users//y20161104577//Desktop//test//GPS.log","r");
-    fscanf(fp,"%s %s",str1,str2);
-    for(i=0; i<9; i++) {
-        if(i<8)
-            lat[i] = str2[i+14];
-        lon[i] = str2[i+25];
-        if(i<6){
-            date[i] = str1[i+51] - 48;
-            time[i] = str2[i+7] - 48;
-        }
+    if(fp == NULL) {
+        printf("文件打开失败！\n");
     }
-    for(i=0; i<8; i++) {
-        if(lat[i]=='.') {
-            newlat[i] = 0;
-        }
-        else {
-            newlat[i] = lat[i] - 48;
-        }
-    }
-    for(i=0; i<9; i++) {
-        if(lon[i]=='.') {
-            newlon[i] = 0;
-        }
-        else {
-            newlon[i] = lon[i] - 48;
-        }
-    }
-    lat1 = newlat[0]*10 + newlat[1];
-    lat2 = newlat[2]*10000 + newlat[3]*1000 + newlat[5]*100 + newlat[6]*10 + newlat[7];
-    lat2 /= 1000;
-    printf("纬度为：%d'%.3f\n",lat1,lat2);
-    lon1 = newlon[0]*100 + newlon[1]*10 + newlon[2];
-    lon2 = newlon[3]*10000 + newlon[4]*1000 + newlon[6]*100 + newlon[7]*10 + newlon[8];
-    lon2 /= 1000;
-    printf("经度为：%d'%.3lf\n",lon1,lon2);
-    
-/*********************************************************************************************/
-    //对UTC时间提取，分析                                                                         时间
-    hour = time[0]*10 + time[1];
-    minute = time[2]*10 + time[3];
-    seconds = time[4]*10 + time[5];
-    //将UTC时间变成北京时间
-    if(hour<16)
-        hour = 8 + hour;
     else {
-        have++;
-        hour = hour - 16;
+        while(fscanf(fp,"%s %s",str1,str2)!=EOF) {
+            elevation = 0;
+            for(i=0; i<9; i++) {
+                if(i<8)
+                    lat[i] = str2[i+14];
+                lon[i] = str2[i+25];
+                if(i<6){
+                    date[i] = str1[i+51] - 48;
+                    time[i] = str2[i+7] - 48;
+                }
+            }
+            for(i=0; i<8; i++) {
+                if(lat[i]=='.') {
+                    newlat[i] = 0;
+                }
+                else {
+                    newlat[i] = lat[i] - 48;
+                }
+            }
+            for(i=0; i<9; i++) {
+                if(lon[i]=='.') {
+                    newlon[i] = 0;
+                }
+                else {
+                    newlon[i] = lon[i] - 48;
+                }
+            }
+            lat1 = newlat[0]*10 + newlat[1];
+            lat2 = newlat[2]*10000 + newlat[3]*1000 + newlat[5]*100 + newlat[6]*10 + newlat[7];
+            lat2 /= 1000;
+            printf("纬度为：%d'%.3f\n",lat1,lat2);
+            lon1 = newlon[0]*100 + newlon[1]*10 + newlon[2];
+            lon2 = newlon[3]*10000 + newlon[4]*1000 + newlon[6]*100 + newlon[7]*10 + newlon[8];
+            lon2 /= 1000;
+            printf("经度为：%d'%.3lf\n",lon1,lon2);
+            
+            /*********************************************************************************************/
+            //对UTC时间提取，分析                                                                         时间
+            hour = time[0]*10 + time[1];
+            minute = time[2]*10 + time[3];
+            seconds = time[4]*10 + time[5];
+            //将UTC时间变成北京时间
+            if(hour<16)
+                hour = 8 + hour;
+            else {
+                have++;
+                hour = hour - 16;
+            }
+            printf("时间为：%d：%d：%d\n",hour,minute,seconds);
+            /********************************************************************************************/
+            //对UTC日期读取，分析                                                                         日期
+            day = date[0]*10 + date[1];
+            month = date[2]*10 + date[3];
+            year = date[4]*10 + date[5];
+            if(have != 0) {
+                day++;
+            }
+            printf("日期为：20%d，%d，%d\n",year,month,day);
+            /********************************************************************************************/
+            latitude = str2[23];                                                                     //经度纬度
+            longitude = str2[35];
+            printf("纬度方向 = %c\n",latitude);
+            printf("经度方向 = %c\n",longitude);
+            //显示完毕；
+            /********************************************************************************************/
+            for(i=43; i<47; i++) {
+                elevation = elevation*10 + (str2[i]-48);
+            }
+            printf("elevation(海拔高度) = %dm\n",elevation);                                            //海拔高度
+            printf("GPRMC读取数据为： %s\n",str1);
+            printf("GPGGA读取数据为： %s\n",str2);
+            fprintf(fl,"20%d年%d月%d日,%d:%d:%d,%c,%d'%.3lf,%c,%d'%.3lf,%dm\n",year,month,day,hour,minute,seconds,latitude,lat1,lat2,longitude,lon1,lon2,elevation);
+            
+        }
+        fclose(fl);
+        fclose(fp);
     }
-    printf("时间为：%d：%d：%d\n",hour,minute,seconds);
-/********************************************************************************************/
-    //对UTC日期读取，分析                                                                         日期
-    day = date[0]*10 + date[1];
-    month = date[2]*10 + date[3];
-    year = date[4]*10 + date[5];
-    if(have != 0) {
-        day++;
-    }
-    printf("日期为：20%d，%d，%d\n",year,month,day);
-/********************************************************************************************/
-    latitude = str2[23];                                                                     //经度纬度
-    longitude = str2[35];
-    printf("纬度方向 = %c\n",latitude);
-    printf("经度方向 = %c\n",longitude);
-    //显示完毕；
-/********************************************************************************************/
-    for(i=43; i<47; i++) {
-        elevation = elevation*10 + (str2[i]-48);
-    }
-    printf("elevation(海拔高度) = %dm\n",elevation);                                            //海拔高度
-    printf("GPRMC读取数据为： %s\n",str1);
-    printf("GPGGA读取数据为： %s\n",str2);
-    fclose(fp);
+    
+    /********************************************************************************************/
 }
-int main() {
-    load();
-    return 0;
-}
+
