@@ -40,6 +40,9 @@ void load()
     FILE *fp;
     char str1[100];//$GPRMC第一行
     char str2[100];//$GPGGA第二行
+    double speed;//
+    char speedch[6];//
+    double speedint[6];
     //将数据写入excel
     FILE *fl;
     fl = fopen("//Users//y20161104577//Desktop//test//information.csv","w");
@@ -84,7 +87,7 @@ void load()
             lon2 = newlon[3]*10000 + newlon[4]*1000 + newlon[6]*100 + newlon[7]*10 + newlon[8];
             lon2 /= 1000;
             printf("经度为：%d'%.3lf\n",lon1,lon2);
-            
+
             /*********************************************************************************************/
             //对UTC时间提取，分析                                                                         时间
             hour = time[0]*10 + time[1];
@@ -98,6 +101,18 @@ void load()
                 hour = hour - 16;
             }
             printf("时间为：%d：%d：%d\n",hour,minute,seconds);
+            /********************************************************************************************/
+                                                                                                        //地面速率
+            for(i=0; i<5; i++) {
+                speedch[i] = str1[i+39];
+                if(speedch[i] != '.') {
+                    speedint[i] = 0;
+                }
+                else
+                    speedint[i] = speedch[i] - 48;
+            }
+            speed = speedint[0]*100 + speedint[1]*10 +speedint[2] +speedint[4]/10;
+            printf("%.1lf",speed);
             /********************************************************************************************/
             //对UTC日期读取，分析                                                                         日期
             day = date[0]*10 + date[1];
@@ -120,13 +135,13 @@ void load()
             printf("elevation(海拔高度) = %dm\n",elevation);                                            //海拔高度
             printf("GPRMC读取数据为： %s\n",str1);
             printf("GPGGA读取数据为： %s\n",str2);
-            fprintf(fl,"20%d年%d月%d日,%d:%d:%d,%c,%d'%.3lf,%c,%d'%.3lf,%dm\n",year,month,day,hour,minute,seconds,latitude,lat1,lat2,longitude,lon1,lon2,elevation);
-            
+            fprintf(fl,"20%d年%d月%d日,%d:%d:%d,%c,%d'%.3lf,%c,%d'%.3lf,%.1lf,%dm\n",year,month,day,hour,minute,seconds,latitude,lat1,lat2,longitude,lon1,lon2,speed,elevation);
+
         }
         fclose(fl);
         fclose(fp);
     }
-    
+
     /********************************************************************************************/
 }
 
