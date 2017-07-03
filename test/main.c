@@ -40,13 +40,18 @@ void load()
     FILE *fp;
     char str1[100];//$GPRMC第一行
     char str2[100];//$GPGGA第二行
-    double speed;//
-    char speedch[6];//
-    double speedint[6];
+    double speed;//地面速率
+    char speedch[6];//读取str中的速率
+    double speedint[6];//转化地面速率为int
+    int moon;//卫星颗数
+    char chmoon[4];//提取卫星颗数
+    char charcourse[6];//提取航向
+    double intcourse[6];//转换为double型数组
+    double course;//整理为数字；
     //将数据写入excel
     FILE *fl;
     fl = fopen("//Users//y20161104577//Desktop//test//information.csv","w");
-    fprintf(fl,"日期，时间，纬度方向，纬度，经度方向，经度，海拔高度\n");
+    fprintf(fl,"日期,时间,纬度方向,纬度,经度方向,经度,地面速度,海拔高度,卫星颗数,航向\n");
     fp = fopen("//Users//y20161104577//Desktop//test//GPS.log","r");
     if(fp == NULL) {
         printf("文件打开失败！\n");
@@ -102,17 +107,36 @@ void load()
             }
             printf("时间为：%d：%d：%d\n",hour,minute,seconds);
             /********************************************************************************************/
+                                                                                                        //卫星颗数
+            chmoon[0] = str2[39];
+            chmoon[1] = str2[40];
+            moon = (chmoon[0] - 48)*10 +(chmoon[1] - 48);
+            printf("卫星颗数为：%d\n",moon);
+            /********************************************************************************************/
+                                                                                                        //航向
+            for(i=0; i<5; i++) {
+                charcourse[i] = str1[i+45];
+                if(charcourse[i] == '.') {
+                    intcourse[i] = 0;
+                }
+                else
+                    intcourse[i] = charcourse[i] - 48;
+            }
+            course = intcourse[0]*100 +intcourse[1]*10 +intcourse[2] +intcourse[4]/10;
+            printf("航向：%.1lf\n",course);
+            /********************************************************************************************/
                                                                                                         //地面速率
             for(i=0; i<5; i++) {
                 speedch[i] = str1[i+39];
-                if(speedch[i] != '.') {
+                if(speedch[i] == '.') {
                     speedint[i] = 0;
                 }
                 else
                     speedint[i] = speedch[i] - 48;
             }
             speed = speedint[0]*100 + speedint[1]*10 +speedint[2] +speedint[4]/10;
-            printf("%.1lf",speed);
+            speed *=1.852;
+            printf("地面速度：%.1lf\n",speed);
             /********************************************************************************************/
             //对UTC日期读取，分析                                                                         日期
             day = date[0]*10 + date[1];
@@ -135,7 +159,7 @@ void load()
             printf("elevation(海拔高度) = %dm\n",elevation);                                            //海拔高度
             printf("GPRMC读取数据为： %s\n",str1);
             printf("GPGGA读取数据为： %s\n",str2);
-            fprintf(fl,"20%d年%d月%d日,%d:%d:%d,%c,%d'%.3lf,%c,%d'%.3lf,%.1lf,%dm\n",year,month,day,hour,minute,seconds,latitude,lat1,lat2,longitude,lon1,lon2,speed,elevation);
+            fprintf(fl,"20%d年%d月%d日,%d:%d:%d,%c,%d'%.3lf,%c,%d'%.3lf,%.1lf,%dm,%d,%.1lf\n",year,month,day,hour,minute,seconds,latitude,lat1,lat2,longitude,lon1,lon2,speed,elevation,moon,course);
 
         }
         fclose(fl);
